@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Theo's Vacuum Game">
+    <title>Theo's Vacuum Game</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIlRoZW8ncyBWYWN1dW0gR2FtZSIsCiAgInNob3J0X25hbWUiOiAiVmFjdXVtIEdhbWUiLAogICJkZXNjcmlwdGlvbiI6ICJDbGVhbiB1cCBtZXNzIHdpdGggYSByb2JvdCB2YWN1dW0gaW4gdGhpcyBmdW4gZ2FtZSEiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAiZnVsbHNjcmVlbiIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzY2N2VlYSIsCiAgInRoZW1lX2NvbG9yIjogIiM2NjdlZWEiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaeUIzYVdSMGFEMGlNakEwSWlCb1pXbG5hSFE5SWpJd05DSWdkbWxsZDBKdmVEMGlNQ0F3SURJd05DQXlNRFFpSUdobGJHNXpQU0pvZEhSd09pOHZkM2QzTG5jekxtOXlaeTh5TURBd0wzTjJaeUkrUEhKbFkzUWdkMmxrZEdnOUlqSXdOQ0lnYUdWcFoyaDBQU0l5TURRaUlHWnBiR3c5SWlNME0wRkdOVEFpTHo0OFkybHlZMnhsSUdONFBTSXhNRElpSUdONVBTSXhNRElpSUhJOUlqSTRJaUJtYVd4c1BTSWpOREZCUmpVd0lqNDhMMk5wY21Oc1pUNDhiM1psYkd4cGNITmxJR041UFNJeE1ESWlJR04wUFNJeE1ESWlJSEo0UFNJeE5TSWdjbms5SWpFMUlpQm1hV3hzUFNJak1qWTNSRE15SWo0OEwyOTJaV3hzYVhCelpUNDhMMk4yWno0PSIsCiAgICAgICJzaXplcyI6ICIxOTJ4MTkyIiwKICAgICAgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCIKICAgIH0sCiAgICB7CiAgICAgICJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sO2Jhc2U2NCxQSE4yWnlCM2FXUjBhRDBpTlRFeUlpQm9aV2xuYUhROUlqVXhNaUlnZG1sbGQwSnZlRDBpTUNBd0lEVXhNaUExTVRJaUlHaHNibE05SW1oMGRIQTZMeTkzZDNjdWR6TXViM0puTHpJd01EQXZjM1puSWo0OGNtVmpkQ0IzYVdSMGFEMGlOVEV5SWlCb1pXbG5hSFE5SWpVeE1pSWdabWxzYkQwaVl6azFZamdnYUhCb1pDa2dJREJzSUdkVUtJTWdJR1Z0TVVoeGMyTk9Ka0FpTHo0OFkybHlZMnhsSUdONFBTSXlOVFlpSUdONVBTSXlOVFlpSUhJOUlqY3dJaUJtYVd4c1BTSWpOREZCUmpVd0lqNDhMMk5wY21Oc1pUNDhiM1psYkd4cGNITmxJR041UFNJeU5UWWlJR04wUFNJeU5UWWlJSEo0UFNJek9DSWdjbms5SWpNNElpQm1hV3hzUFNJak1qWTNSRE15SWo0OEwyOTJaV3hzYVhCelpUNDhMMk4yWno0PSIsCiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICAgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCIKICAgIH0KICBdCn0=">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Arial', sans-serif;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            touch-action: none;
+            user-select: none;
+        }
+        
+        .title-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            cursor: pointer;
+        }
+        
+        .title-screen h1 {
+            font-size: 3.5rem;
+            margin: 0 0 1rem 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: pulse 2s infinite;
+        }
+        
+        .title-screen .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        
+        .vacuum-icon {
+            width: 120px;
+            height: 120px;
+            background: #4CAF50;
+            border-radius: 50%;
+            margin: 2rem auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .vacuum-icon::before {
+            content: '🤖';
+            font-size: 4rem;
+        }
+        
+        .start-text {
+            font-size: 1.1rem;
+            opacity: 0.8;
+            animation: blink 2s infinite;
+        }
+        
+        .install-prompt {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.2);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 0.8; }
+            51%, 100% { opacity: 0.3; }
+        }
+        
+        .game-container {
+            background: rgba(255, 255, 255, 0.95);
+            width: 100vw;
+            height: 100vh;
+            padding: 0;
+            text-align: center;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 15px;
+            margin-bottom: 0;
+            font-weight: bold;
+            color: #333;
+            background: rgba(255, 255, 255, 0.9);
+            border-bottom: 2px solid #ddd;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        
+        canvas {
+            background: #f0f0f0;
+            display: block;
+            width: 100vw;
+            height: calc(100vh - 140px);
+            min-height: 300px;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+        
+        .target-indicator {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #FF5722;
+            border-radius: 50%;
+            background: rgba(255, 87, 34, 0.2);
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .target-indicator.show {
+            opacity: 1;
+        }
+        
+        .control-mode {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 8px;
+            flex-wrap: wrap;
+            background: rgba(255, 255, 255, 0.9);
+            border-top: 2px solid #ddd;
+            flex-shrink: 0;
+        }
+        
+        .mode-btn {
+            background: linear-gradient(145deg, #e0e0e0, #c0c0c0);
+            border: 2px solid #999;
+            border-radius: 15px;
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        
+        .mode-btn.active {
+            background: linear-gradient(145deg, #4CAF50, #45a049);
+            border-color: #2E7D32;
+            color: white;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+        }
+        
+        .mode-btn:hover {
+            transform: translateY(-1px);
+        }
+        
+        .controls {
+            padding: 8px 15px;
+            color: #666;
+            font-size: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            border-top: 1px solid #ddd;
+            flex-shrink: 0;
+        }
+        
+        .level-complete {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .title-screen h1 {
+                font-size: 2.5rem;
+            }
+            
+            .vacuum-icon {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .vacuum-icon::before {
+                font-size: 2.5rem;
+            }
+            
+            .game-info {
+                font-size: 12px;
+                padding: 6px 10px;
+            }
+            
+            .mode-btn {
+                font-size: 10px;
+                padding: 5px 10px;
+            }
+            
+            .controls {
+                font-size: 10px;
+                padding: 6px 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .title-screen h1 {
+                font-size: 2rem;
+            }
+            
+            .game-info {
+                font-size: 11px;
+                padding: 5px 8px;
+            }
+            
+            .mode-btn {
+                font-size: 9px;
+                padding: 4px 8px;
+            }
+            
+            .controls {
+                font-size: 9px;
+                padding: 5px 8px;
+            }
+        }
+        
+        @media (orientation: landscape) and (max-height: 500px) {
+            .controls {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Title Screen -->
+    <div class="title-screen" id="titleScreen">
+        <h1>Theo's Vacuum Game</h1>
+        <p class="subtitle">Clean up the mess with your robot vacuum!</p>
+        <div class="vacuum-icon"></div>
+        <p class="start-text">Tap anywhere to start</p>
+        <div class="install-prompt" id="installPrompt" style="display: none;">
+            📱 Tap here to install as an app!
+        </div>
+    </div>
+
+    <!-- Game Container -->
+    <div class="game-container" id="gameContainer">
+        <div class="game-info">
+            <div>Room: <span id="room-num">1</span></div>
+            <div>Mess Left: <span id="dirt-count">0</span></div>
+            <div>Score: <span id="score">0</span></div>
+        </div>
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div class="target-indicator" id="targetIndicator"></div>
+        <div class="control-mode">
+            <button class="mode-btn active" id="tapMode">Tap to Move</button>
+            <button class="mode-btn" id="dragMode">Drag Vacuum</button>
+            <button class="mode-btn" id="joystickMode">Virtual Joystick</button>
+        </div>
+        <div class="controls" id="controlText">
+            Tap anywhere to move your robot vacuum there!
+        </div>
+        <div class="level-complete" id="levelComplete">
+            Room Clean! Moving to next room...
+        </div>
+    </div>
+
+    <script>
+        // PWA Service Worker Registration (only when available)
+        function registerServiceWorker() {
+            try {
+                if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
+                    window.addEventListener('load', () => {
+                        const swCode = `
+                            const CACHE_NAME = 'theo-vacuum-game-v1';
+                            const urlsToCache = ['/'];
+                            
+                            self.addEventListener('install', event => {
+                                event.waitUntil(
+                                    caches.open(CACHE_NAME)
+                                        .then(cache => cache.addAll(urlsToCache))
+                                );
+                            });
+                            
+                            self.addEventListener('fetch', event => {
+                                event.respondWith(
+                                    caches.match(event.request)
+                                        .then(response => response || fetch(event.request))
+                                );
+                            });
+                        `;
+                        
+                        const blob = new Blob([swCode], { type: 'application/javascript' });
+                        const swUrl = URL.createObjectURL(blob);
+                        
+                        navigator.serviceWorker.register(swUrl)
+                            .then(registration => console.log('PWA: Service Worker registered'))
+                            .catch(error => console.log('PWA: Service Worker registration failed (not critical)'));
+                    });
+                }
+            } catch (error) {
+                console.log('PWA: Service Worker not available (running in sandbox)');
+            }
+        }
+
+        // PWA Install Prompt (only when available)
+        function setupInstallPrompt() {
+            try {
+                let deferredPrompt;
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    e.preventDefault();
+                    deferredPrompt = e;
+                    document.getElementById('installPrompt').style.display = 'block';
+                    
+                    document.getElementById('installPrompt').addEventListener('click', async () => {
+                        if (deferredPrompt) {
+                            deferredPrompt.prompt();
+                            const { outcome } = await deferredPrompt.userChoice;
+                            console.log(`PWA: Install prompt outcome: ${outcome}`);
+                            deferredPrompt = null;
+                            document.getElementById('installPrompt').style.display = 'none';
+                        }
+                    });
+                });
+            } catch (error) {
+                console.log('PWA: Install prompt not available');
+            }
+        }
+
+        // Initialize PWA features
+        registerServiceWorker();
+        setupInstallPrompt();
+
+        // Game state
+        let gameStarted = false;
+        let currentRoom = 1;
+        let score = 0;
+        let gameRunning = true;
+        let controlMode = 'tap';
+        let isDragging = false;
+        let dragOffset = { x: 0, y: 0 };
+        let joystickActive = false;
+        let joystickCenter = { x: 0, y: 0 };
+        let joystickPos = { x: 0, y: 0 };
+        
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Robot vacuum
+        const robot = {
+            x: 50,
+            y: 50,
+            size: 28,
+            speed: 3,
+            color: '#4CAF50',
+            targetX: 50,
+            targetY: 50,
+            isMoving: false
+        };
+        
+        let currentWalls = [];
+        let messItems = [];
+        
+        // Different types of mess to clean
+        const messTypes = [
+            { 
+                name: 'dirt', 
+                color: '#8D6E63', 
+                darkColor: '#5D4037', 
+                size: 8, 
+                points: 10,
+                shape: 'splatter'
+            },
+            { 
+                name: 'wrapper', 
+                color: '#FF9800', 
+                darkColor: '#F57C00', 
+                size: 12, 
+                points: 15,
+                shape: 'crumpled'
+            },
+            { 
+                name: 'stain', 
+                color: '#795548', 
+                darkColor: '#4E342E', 
+                size: 14, 
+                points: 20,
+                shape: 'splatter'
+            },
+            { 
+                name: 'fruit', 
+                color: '#E91E63', 
+                darkColor: '#C2185B', 
+                size: 10, 
+                points: 25,
+                shape: 'round'
+            },
+            { 
+                name: 'crumbs', 
+                color: '#FFC107', 
+                darkColor: '#FF8F00', 
+                size: 6, 
+                points: 5,
+                shape: 'scattered'
+            }
+        ];
+
+        // Input handling
+        const keys = {};
+        
+        document.addEventListener('keydown', (e) => {
+            keys[e.key.toLowerCase()] = true;
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            keys[e.key.toLowerCase()] = false;
+        });
+
+        // Title screen handling
+        document.getElementById('titleScreen').addEventListener('click', startGame);
+        document.getElementById('titleScreen').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            startGame();
+        });
+
+        function startGame() {
+            if (gameStarted) return;
+            gameStarted = true;
+            
+            document.getElementById('titleScreen').style.display = 'none';
+            document.getElementById('gameContainer').style.display = 'flex';
+            
+            // Initialize game after screen detection
+            detectScreenSize();
+            resizeCanvas();
+            generateRoom();
+            gameLoop();
+        }
+
+        function detectScreenSize() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const isMobile = width <= 768;
+            const isLandscape = width > height;
+            
+            console.log(`Screen detected: ${width}x${height}, Mobile: ${isMobile}, Landscape: ${isLandscape}`);
+            
+            // Adjust game settings based on screen
+            if (isMobile) {
+                robot.speed = isLandscape ? 4 : 3;
+                robot.size = isLandscape ? 32 : 28;
+            } else {
+                robot.speed = 3;
+                robot.size = 28;
+            }
+        }
+
+        // Room layouts (walls as rectangles) - Dynamic based on canvas size
+        function generateRoomLayout(width, height) {
+            const wallThickness = Math.max(20, Math.min(width, height) * 0.03);
+            const roomLayouts = [
+                // Room 1 - Simple L-shape
+                [
+                    {x: 0, y: 0, w: width, h: wallThickness},
+                    {x: 0, y: 0, w: wallThickness, h: height},
+                    {x: width - wallThickness, y: 0, w: wallThickness, h: height},
+                    {x: 0, y: height - wallThickness, w: width, h: wallThickness},
+                    {x: width * 0.25, y: height * 0.4, w: width * 0.5, h: wallThickness}
+                ],
+                // Room 2 - Cross shape
+                [
+                    {x: 0, y: 0, w: width, h: wallThickness},
+                    {x: 0, y: 0, w: wallThickness, h: height},
+                    {x: width - wallThickness, y: 0, w: wallThickness, h: height},
+                    {x: 0, y: height - wallThickness, w: width, h: wallThickness},
+                    {x: width * 0.2, y: height * 0.2, w: wallThickness, h: height * 0.3},
+                    {x: width * 0.75, y: height * 0.2, w: wallThickness, h: height * 0.3},
+                    {x: width * 0.2, y: height * 0.5, w: wallThickness, h: height * 0.3},
+                    {x: width * 0.75, y: height * 0.5, w: wallThickness, h: height * 0.3}
+                ],
+                // Room 3 - Maze-like
+                [
+                    {x: 0, y: 0, w: width, h: wallThickness},
+                    {x: 0, y: 0, w: wallThickness, h: height},
+                    {x: width - wallThickness, y: 0, w: wallThickness, h: height},
+                    {x: 0, y: height - wallThickness, w: width, h: wallThickness},
+                    {x: width * 0.15, y: height * 0.15, w: wallThickness, h: height * 0.35},
+                    {x: width * 0.35, y: height * 0.35, w: wallThickness, h: height * 0.35},
+                    {x: width * 0.5, y: height * 0.15, w: wallThickness, h: height * 0.35},
+                    {x: width * 0.65, y: height * 0.35, w: wallThickness, h: height * 0.35},
+                    {x: width * 0.8, y: height * 0.15, w: wallThickness, h: height * 0.35}
+                ]
+            ];
+            return roomLayouts;
+        }
+
+        function updateUI() {
+            document.getElementById('room-num').textContent = currentRoom;
+            document.getElementById('dirt-count').textContent = messItems.length;
+            document.getElementById('score').textContent = score;
+        }
+
+        function generateRoom() {
+            const canvasWidth = canvas.width;
+            const canvasHeight = canvas.height;
+            
+            const roomLayouts = generateRoomLayout(canvasWidth, canvasHeight);
+            const layoutIndex = (currentRoom - 1) % roomLayouts.length;
+            currentWalls = [...roomLayouts[layoutIndex]];
+            
+            messItems = [];
+            const area = (canvasWidth * canvasHeight) / 10000;
+            const numMess = Math.floor(15 * area + Math.random() * 12 * area);
+            
+            for (let i = 0; i < numMess; i++) {
+                let validPosition = false;
+                let attempts = 0;
+                
+                while (!validPosition && attempts < 100) {
+                    const margin = Math.max(60, canvasWidth * 0.08);
+                    const x = margin + Math.random() * (canvasWidth - margin * 2);
+                    const y = margin + Math.random() * (canvasHeight - margin * 2);
+                    
+                    const messType = messTypes[Math.floor(Math.random() * messTypes.length)];
+                    validPosition = true;
+                    
+                    for (const wall of currentWalls) {
+                        const wallMargin = Math.max(25, Math.min(canvasWidth, canvasHeight) * 0.04);
+                        if (x > wall.x - wallMargin && x < wall.x + wall.w + wallMargin &&
+                            y > wall.y - wallMargin && y < wall.y + wall.h + wallMargin) {
+                            validPosition = false;
+                            break;
+                        }
+                    }
+                    
+                    const robotStartMargin = Math.max(60, Math.min(canvasWidth, canvasHeight) * 0.1);
+                    const dist = Math.sqrt((x - (robot.size + 20)) ** 2 + (y - (robot.size + 20)) ** 2);
+                    if (dist < robotStartMargin) {
+                        validPosition = false;
+                    }
+                    
+                    const messMargin = Math.max(35, Math.min(canvasWidth, canvasHeight) * 0.05);
+                    for (const mess of messItems) {
+                        const messDist = Math.sqrt((x - mess.x) ** 2 + (y - mess.y) ** 2);
+                        if (messDist < messMargin) {
+                            validPosition = false;
+                            break;
+                        }
+                    }
+                    
+                    if (validPosition) {
+                        messItems.push({
+                            x: x,
+                            y: y,
+                            type: messType,
+                            size: messType.size + Math.random() * 4 - 2
+                        });
+                    }
+                    
+                    attempts++;
+                }
+            }
+            
+            const startMargin = Math.max(50, Math.min(canvas.width, canvas.height) * 0.06);
+            robot.x = startMargin;
+            robot.y = startMargin;
+            robot.targetX = startMargin + robot.size/2;
+            robot.targetY = startMargin + robot.size/2;
+            robot.isMoving = false;
+            
+            updateUI();
+        }
+
+        function checkCollision(x, y, size) {
+            for (const wall of currentWalls) {
+                if (x < wall.x + wall.w && x + size > wall.x &&
+                    y < wall.y + wall.h && y + size > wall.y) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function checkMessCollection() {
+            for (let i = messItems.length - 1; i >= 0; i--) {
+                const mess = messItems[i];
+                const dist = Math.sqrt((robot.x + robot.size/2 - mess.x) ** 2 + 
+                                     (robot.y + robot.size/2 - mess.y) ** 2);
+                
+                if (dist < robot.size/2 + mess.size + 5) {
+                    score += mess.type.points;
+                    messItems.splice(i, 1);
+                    updateUI();
+                }
+            }
+        }
+
+        // Touch/Click controls for canvas
+        const targetIndicator = document.getElementById('targetIndicator');
+        const controlText = document.getElementById('controlText');
+        
+        // Control mode buttons
+        document.getElementById('tapMode').addEventListener('click', () => setControlMode('tap'));
+        document.getElementById('dragMode').addEventListener('click', () => setControlMode('drag'));
+        document.getElementById('joystickMode').addEventListener('click', () => setControlMode('joystick'));
+        
+        function setControlMode(mode) {
+            controlMode = mode;
+            robot.isMoving = false;
+            isDragging = false;
+            joystickActive = false;
+            
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            
+            if (mode === 'tap') {
+                document.getElementById('tapMode').classList.add('active');
+                controlText.textContent = 'Tap anywhere to move your robot vacuum there!';
+            } else if (mode === 'drag') {
+                document.getElementById('dragMode').classList.add('active');
+                controlText.textContent = 'Drag the robot vacuum around with your finger!';
+            } else if (mode === 'joystick') {
+                document.getElementById('joystickMode').classList.add('active');
+                controlText.textContent = 'Touch and drag anywhere to create a virtual joystick!';
+            }
+        }
+        
+        function getCanvasCoordinates(event) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            
+            let clientX, clientY;
+            if (event.touches && event.touches[0]) {
+                clientX = event.touches[0].clientX;
+                clientY = event.touches[0].clientY;
+            } else {
+                clientX = event.clientX;
+                clientY = event.clientY;
+            }
+            
+            return {
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY
+            };
+        }
+        
+        function isPointInRobot(x, y) {
+            const dx = x - (robot.x + robot.size/2);
+            const dy = y - (robot.y + robot.size/2);
+            return Math.sqrt(dx * dx + dy * dy) <= robot.size/2 + 10;
+        }
+        
+        function setTarget(x, y) {
+            if (controlMode !== 'tap') return;
+            
+            if (checkCollision(x - robot.size/2, y - robot.size/2, robot.size)) {
+                return;
+            }
+            
+            robot.targetX = x;
+            robot.targetY = y;
+            robot.isMoving = true;
+            
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = rect.width / canvas.width;
+            const scaleY = rect.height / canvas.height;
+            
+            targetIndicator.style.left = (rect.left + x * scaleX) + 'px';
+            targetIndicator.style.top = (rect.top + y * scaleY) + 'px';
+            targetIndicator.classList.add('show');
+            
+            setTimeout(() => {
+                targetIndicator.classList.remove('show');
+            }, 1000);
+        }
+        
+        function handleStart(e) {
+            e.preventDefault();
+            const coords = getCanvasCoordinates(e);
+            
+            if (controlMode === 'tap') {
+                setTarget(coords.x, coords.y);
+            } else if (controlMode === 'drag') {
+                if (isPointInRobot(coords.x, coords.y)) {
+                    isDragging = true;
+                    dragOffset.x = coords.x - (robot.x + robot.size/2);
+                    dragOffset.y = coords.y - (robot.y + robot.size/2);
+                    robot.isMoving = false;
+                }
+            } else if (controlMode === 'joystick') {
+                joystickActive = true;
+                joystickCenter.x = coords.x;
+                joystickCenter.y = coords.y;
+                joystickPos.x = coords.x;
+                joystickPos.y = coords.y;
+                robot.isMoving = false;
+            }
+        }
+        
+        function handleMove(e) {
+            if (!gameRunning) return;
+            e.preventDefault();
+            const coords = getCanvasCoordinates(e);
+            
+            if (controlMode === 'drag' && isDragging) {
+                const newX = coords.x - dragOffset.x - robot.size/2;
+                const newY = coords.y - dragOffset.y - robot.size/2;
+                
+                const margin = Math.max(25, Math.min(canvas.width, canvas.height) * 0.03);
+                let finalX = Math.max(margin, Math.min(canvas.width - robot.size - margin, newX));
+                let finalY = Math.max(margin, Math.min(canvas.height - robot.size - margin, newY));
+                
+                if (!checkCollision(finalX, finalY, robot.size)) {
+                    robot.x = finalX;
+                    robot.y = finalY;
+                    checkMessCollection();
+                }
+            } else if (controlMode === 'joystick' && joystickActive) {
+                joystickPos.x = coords.x;
+                joystickPos.y = coords.y;
+                
+                const dx = joystickPos.x - joystickCenter.x;
+                const dy = joystickPos.y - joystickCenter.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                const maxDistance = 50;
+                
+                if (distance > maxDistance) {
+                    joystickPos.x = joystickCenter.x + (dx / distance) * maxDistance;
+                    joystickPos.y = joystickCenter.y + (dy / distance) * maxDistance;
+                }
+            }
+        }
+        
+        function handleEnd(e) {
+            e.preventDefault();
+            isDragging = false;
+            joystickActive = false;
+        }
+        
+        canvas.addEventListener('mousedown', handleStart);
+        canvas.addEventListener('mousemove', handleMove);
+        canvas.addEventListener('mouseup', handleEnd);
+        canvas.addEventListener('mouseleave', handleEnd);
+        
+        canvas.addEventListener('touchstart', handleStart);
+        canvas.addEventListener('touchmove', handleMove);
+        canvas.addEventListener('touchend', handleEnd);
+        canvas.addEventListener('touchcancel', handleEnd);
+        
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
+
+        function resizeCanvas() {
+            const availableWidth = window.innerWidth;
+            const availableHeight = window.innerHeight - 140;
+            
+            const isMobile = window.innerWidth <= 768;
+            
+            if (isMobile) {
+                const mobileAspectRatio = 4/3;
+                
+                canvas.width = Math.max(availableWidth, 400);
+                canvas.height = Math.max(availableHeight, canvas.width / mobileAspectRatio);
+                
+                if (canvas.height > availableHeight) {
+                    canvas.height = availableHeight;
+                    canvas.width = canvas.height * mobileAspectRatio;
+                }
+            } else {
+                canvas.width = Math.max(800, availableWidth * 0.9);
+                canvas.height = Math.max(600, availableHeight * 0.9);
+            }
+            
+            const canvasAspectRatio = canvas.width / canvas.height;
+            const screenAspectRatio = availableWidth / availableHeight;
+            
+            if (screenAspectRatio > canvasAspectRatio) {
+                canvas.style.height = availableHeight + 'px';
+                canvas.style.width = (availableHeight * canvasAspectRatio) + 'px';
+            } else {
+                canvas.style.width = availableWidth + 'px';
+                canvas.style.height = (availableWidth / canvasAspectRatio) + 'px';
+            }
+            
+            canvas.style.margin = '0 auto';
+            canvas.style.display = 'block';
+        }
+        
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                detectScreenSize();
+                resizeCanvas();
+            }, 100);
+        });
+
+        function updateRobot() {
+            if (!gameRunning) return;
+            
+            let newX = robot.x;
+            let newY = robot.y;
+            
+            if (keys['w'] || keys['arrowup']) {
+                newY -= robot.speed;
+                robot.isMoving = false;
+            }
+            if (keys['s'] || keys['arrowdown']) {
+                newY += robot.speed;
+                robot.isMoving = false;
+            }
+            if (keys['a'] || keys['arrowleft']) {
+                newX -= robot.speed;
+                robot.isMoving = false;
+            }
+            if (keys['d'] || keys['arrowright']) {
+                newX += robot.speed;
+                robot.isMoving = false;
+            }
+            
+            if (controlMode === 'joystick' && joystickActive) {
+                const dx = joystickPos.x - joystickCenter.x;
+                const dy = joystickPos.y - joystickCenter.y;
+                const magnitude = Math.sqrt(dx * dx + dy * dy) / 50;
+                
+                if (magnitude > 0.1) {
+                    const moveX = (dx / Math.sqrt(dx * dx + dy * dy)) * robot.speed * magnitude;
+                    const moveY = (dy / Math.sqrt(dx * dx + dy * dy)) * robot.speed * magnitude;
+                    
+                    newX = robot.x + moveX;
+                    newY = robot.y + moveY;
+                }
+            }
+            
+            if (robot.isMoving && controlMode === 'tap') {
+                const dx = robot.targetX - (robot.x + robot.size/2);
+                const dy = robot.targetY - (robot.y + robot.size/2);
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance > 3) {
+                    const moveX = (dx / distance) * robot.speed;
+                    const moveY = (dy / distance) * robot.speed;
+                    
+                    newX = robot.x + moveX;
+                    newY = robot.y + moveY;
+                } else {
+                    robot.isMoving = false;
+                }
+            }
+            
+            if (controlMode === 'drag' && isDragging) {
+                checkMessCollection();
+                return;
+            }
+            
+            const margin = Math.max(25, Math.min(canvas.width, canvas.height) * 0.03);
+            if (newX < margin) newX = margin;
+            if (newX > canvas.width - robot.size - margin) newX = canvas.width - robot.size - margin;
+            if (newY < margin) newY = margin;
+            if (newY > canvas.height - robot.size - margin) newY = canvas.height - robot.size - margin;
+            
+            if (!checkCollision(newX, robot.y, robot.size)) {
+                robot.x = newX;
+            } else if (robot.isMoving) {
+                robot.isMoving = false;
+            }
+            if (!checkCollision(robot.x, newY, robot.size)) {
+                robot.y = newY;
+            } else if (robot.isMoving) {
+                robot.isMoving = false;
+            }
+            
+            checkMessCollection();
+            
+            if (messItems.length === 0) {
+                gameRunning = false;
+                robot.isMoving = false;
+                isDragging = false;
+                joystickActive = false;
+                document.getElementById('levelComplete').style.display = 'block';
+                
+                setTimeout(() => {
+                    currentRoom++;
+                    gameRunning = true;
+                    document.getElementById('levelComplete').style.display = 'none';
+                    generateRoom();
+                }, 2000);
+            }
+        }
+        
+        function drawRobot() {
+            ctx.save();
+            ctx.translate(robot.x + robot.size/2, robot.y + robot.size/2);
+            
+            ctx.fillStyle = robot.color;
+            ctx.beginPath();
+            ctx.arc(0, 0, robot.size/2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#2E7D32';
+            ctx.beginPath();
+            ctx.arc(0, 0, robot.size/4, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.strokeStyle = '#1B5E20';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(robot.size/3, 0);
+            ctx.stroke();
+            
+            ctx.restore();
+        }
+        
+        function drawMess(mess) {
+            const type = mess.type;
+            
+            if (type.shape === 'splatter') {
+                ctx.fillStyle = type.color;
+                ctx.beginPath();
+                ctx.arc(mess.x, mess.y, mess.size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = type.darkColor;
+                for (let i = 0; i < 3; i++) {
+                    const angle = (i * Math.PI * 2) / 3;
+                    const offsetX = Math.cos(angle) * mess.size * 0.3;
+                    const offsetY = Math.sin(angle) * mess.size * 0.3;
+                    ctx.beginPath();
+                    ctx.arc(mess.x + offsetX, mess.y + offsetY, mess.size * 0.2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            } else if (type.shape === 'crumpled') {
+                ctx.save();
+                ctx.translate(mess.x, mess.y);
+                ctx.rotate(Math.random() * Math.PI);
+                
+                ctx.fillStyle = type.color;
+                ctx.fillRect(-mess.size, -mess.size/2, mess.size * 2, mess.size);
+                
+                ctx.fillStyle = type.darkColor;
+                ctx.fillRect(-mess.size * 0.7, -mess.size/3, mess.size * 1.4, mess.size/3);
+                
+                ctx.restore();
+            } else if (type.shape === 'round') {
+                ctx.fillStyle = type.color;
+                ctx.beginPath();
+                ctx.arc(mess.x, mess.y, mess.size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.beginPath();
+                ctx.arc(mess.x - mess.size * 0.3, mess.y - mess.size * 0.3, mess.size * 0.4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = type.darkColor;
+                ctx.beginPath();
+                ctx.arc(mess.x + mess.size * 0.2, mess.y + mess.size * 0.2, mess.size * 0.3, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (type.shape === 'scattered') {
+                ctx.fillStyle = type.color;
+                for (let i = 0; i < 4; i++) {
+                    const angle = (i * Math.PI * 2) / 4 + Math.random() * 0.5;
+                    const radius = mess.size * (0.5 + Math.random() * 0.5);
+                    const x = mess.x + Math.cos(angle) * radius;
+                    const y = mess.y + Math.sin(angle) * radius;
+                    ctx.beginPath();
+                    ctx.arc(x, y, mess.size * 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        }
+        
+        function drawRoom() {
+            ctx.fillStyle = '#E8F5E8';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#333';
+            for (const wall of currentWalls) {
+                ctx.fillRect(wall.x, wall.y, wall.w, wall.h);
+            }
+            
+            for (const mess of messItems) {
+                drawMess(mess);
+            }
+            
+            if (controlMode === 'joystick' && joystickActive) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.beginPath();
+                ctx.arc(joystickCenter.x, joystickCenter.y, 50, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                ctx.fillStyle = 'rgba(76, 175, 80, 0.8)';
+                ctx.beginPath();
+                ctx.arc(joystickPos.x, joystickPos.y, 15, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.strokeStyle = 'rgba(46, 125, 50, 1)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+        }
+        
+        function gameLoop() {
+            if (gameStarted) {
+                updateRobot();
+                drawRoom();
+                drawRobot();
+            }
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Start the game loop (will only render when gameStarted is true)
+        gameLoop();
+    </script>
+</body>
+</html>
