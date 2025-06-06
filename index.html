@@ -211,13 +211,33 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.8);
+            background: linear-gradient(135deg, rgba(76,175,80,0.95), rgba(46,125,50,0.95));
             color: white;
-            padding: 20px;
-            border-radius: 10px;
-            font-size: 24px;
+            padding: 30px 50px;
+            border-radius: 20px;
+            font-size: 28px;
             font-weight: bold;
             display: none;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            animation: zoomIn 0.5s ease-out;
+        }
+        
+        .level-complete .bonus {
+            font-size: 18px;
+            margin-top: 10px;
+            color: #ffeb3b;
+        }
+        
+        @keyframes zoomIn {
+            from {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
         }
         
         @media (max-width: 768px) {
@@ -293,7 +313,7 @@
     <!-- Game Container -->
     <div class="game-container" id="gameContainer">
         <div class="game-info">
-            <div>Room: <span id="room-num">1</span></div>
+            <div>Room: <span id="room-num">1</span> - <span id="room-name">Living Room</span></div>
             <div>Mess Left: <span id="dirt-count">0</span></div>
             <div>Score: <span id="score">0</span></div>
         </div>
@@ -308,7 +328,8 @@
             Tap anywhere to move your robot vacuum there!
         </div>
         <div class="level-complete" id="levelComplete">
-            Room Clean! Moving to next room...
+            <div>Room Clean!</div>
+            <div class="bonus">+<span id="bonusPoints">100</span> Bonus Points!</div>
         </div>
     </div>
 
@@ -389,6 +410,9 @@
         let joystickActive = false;
         let joystickCenter = { x: 0, y: 0 };
         let joystickPos = { x: 0, y: 0 };
+        let animationTime = 0;
+        let particles = [];
+        let cleaningTrail = [];
         
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -402,11 +426,76 @@
             color: '#4CAF50',
             targetX: 50,
             targetY: 50,
-            isMoving: false
+            isMoving: false,
+            rotation: 0,
+            targetRotation: 0,
+            brushRotation: 0
         };
         
         let currentWalls = [];
         let messItems = [];
+        let furniture = [];
+        let roomTheme = {};
+        
+        // Room themes
+        const roomThemes = {
+            livingRoom: {
+                name: 'Living Room',
+                floorColor: '#F5E6D3',
+                floorPattern: 'wood',
+                wallColor: '#8B7355',
+                furnitureTypes: ['couch', 'tv', 'table', 'plant']
+            },
+            kitchen: {
+                name: 'Kitchen',
+                floorColor: '#E8E8E8',
+                floorPattern: 'tiles',
+                wallColor: '#4A4A4A',
+                furnitureTypes: ['counter', 'fridge', 'stove', 'table']
+            },
+            bedroom: {
+                name: 'Bedroom',
+                floorColor: '#C8B88B',
+                floorPattern: 'carpet',
+                wallColor: '#7B68A5',
+                furnitureTypes: ['bed', 'dresser', 'nightstand', 'lamp']
+            },
+            bathroom: {
+                name: 'Bathroom',
+                floorColor: '#B0D4E3',
+                floorPattern: 'tiles',
+                wallColor: '#5A8FA3',
+                furnitureTypes: ['bathtub', 'sink', 'toilet']
+            },
+            garage: {
+                name: 'Garage',
+                floorColor: '#909090',
+                floorPattern: 'concrete',
+                wallColor: '#505050',
+                furnitureTypes: ['car', 'toolbox', 'shelf']
+            },
+            playroom: {
+                name: 'Playroom',
+                floorColor: '#FFE5B4',
+                floorPattern: 'carpet',
+                wallColor: '#FF9966',
+                furnitureTypes: ['toybox', 'playmat', 'bookshelf']
+            },
+            office: {
+                name: 'Office',
+                floorColor: '#D3C7B8',
+                floorPattern: 'wood',
+                wallColor: '#6B5B45',
+                furnitureTypes: ['desk', 'chair', 'bookshelf', 'filing']
+            },
+            hallway: {
+                name: 'Hallway',
+                floorColor: '#E0D5C7',
+                floorPattern: 'wood',
+                wallColor: '#8B7D6B',
+                furnitureTypes: ['table', 'plant']
+            }
+        };
         
         // Different types of mess to clean
         const messTypes = [
@@ -449,6 +538,22 @@
                 size: 6, 
                 points: 5,
                 shape: 'scattered'
+            },
+            {
+                name: 'paper',
+                color: '#E3F2FD',
+                darkColor: '#BBDEFB',
+                size: 16,
+                points: 12,
+                shape: 'paper'
+            },
+            {
+                name: 'toy',
+                color: '#FF5252',
+                darkColor: '#D32F2F',
+                size: 15,
+                points: 30,
+                shape: 'toy'
             }
         ];
 
@@ -502,47 +607,107 @@
             }
         }
 
-        // Room layouts (walls as rectangles) - Dynamic based on canvas size
-        function generateRoomLayout(width, height) {
+        // Enhanced room layouts with furniture
+        function generateRoomLayout(width, height, roomType) {
             const wallThickness = Math.max(20, Math.min(width, height) * 0.03);
-            const roomLayouts = [
-                // Room 1 - Simple L-shape
-                [
-                    {x: 0, y: 0, w: width, h: wallThickness},
-                    {x: 0, y: 0, w: wallThickness, h: height},
-                    {x: width - wallThickness, y: 0, w: wallThickness, h: height},
-                    {x: 0, y: height - wallThickness, w: width, h: wallThickness},
-                    {x: width * 0.25, y: height * 0.4, w: width * 0.5, h: wallThickness}
-                ],
-                // Room 2 - Cross shape
-                [
-                    {x: 0, y: 0, w: width, h: wallThickness},
-                    {x: 0, y: 0, w: wallThickness, h: height},
-                    {x: width - wallThickness, y: 0, w: wallThickness, h: height},
-                    {x: 0, y: height - wallThickness, w: width, h: wallThickness},
-                    {x: width * 0.2, y: height * 0.2, w: wallThickness, h: height * 0.3},
-                    {x: width * 0.75, y: height * 0.2, w: wallThickness, h: height * 0.3},
-                    {x: width * 0.2, y: height * 0.5, w: wallThickness, h: height * 0.3},
-                    {x: width * 0.75, y: height * 0.5, w: wallThickness, h: height * 0.3}
-                ],
-                // Room 3 - Maze-like
-                [
-                    {x: 0, y: 0, w: width, h: wallThickness},
-                    {x: 0, y: 0, w: wallThickness, h: height},
-                    {x: width - wallThickness, y: 0, w: wallThickness, h: height},
-                    {x: 0, y: height - wallThickness, w: width, h: wallThickness},
-                    {x: width * 0.15, y: height * 0.15, w: wallThickness, h: height * 0.35},
-                    {x: width * 0.35, y: height * 0.35, w: wallThickness, h: height * 0.35},
-                    {x: width * 0.5, y: height * 0.15, w: wallThickness, h: height * 0.35},
-                    {x: width * 0.65, y: height * 0.35, w: wallThickness, h: height * 0.35},
-                    {x: width * 0.8, y: height * 0.15, w: wallThickness, h: height * 0.35}
-                ]
+            const layouts = [];
+            
+            // Generate base walls
+            const baseWalls = [
+                {x: 0, y: 0, w: width, h: wallThickness},
+                {x: 0, y: 0, w: wallThickness, h: height},
+                {x: width - wallThickness, y: 0, w: wallThickness, h: height},
+                {x: 0, y: height - wallThickness, w: width, h: wallThickness}
             ];
-            return roomLayouts;
+            
+            // Different room configurations
+            if (roomType === 'livingRoom') {
+                return {
+                    walls: [...baseWalls,
+                        {x: width * 0.6, y: height * 0.3, w: wallThickness, h: height * 0.4}
+                    ],
+                    furniture: [
+                        {type: 'couch', x: width * 0.1, y: height * 0.2, w: width * 0.35, h: height * 0.15},
+                        {type: 'tv', x: width * 0.7, y: height * 0.1, w: width * 0.2, h: wallThickness},
+                        {type: 'table', x: width * 0.25, y: height * 0.5, w: width * 0.15, h: width * 0.15}
+                    ]
+                };
+            } else if (roomType === 'kitchen') {
+                return {
+                    walls: [...baseWalls],
+                    furniture: [
+                        {type: 'counter', x: width * 0.1, y: height * 0.1, w: width * 0.6, h: height * 0.1},
+                        {type: 'fridge', x: width * 0.75, y: height * 0.1, w: width * 0.15, h: height * 0.2},
+                        {type: 'table', x: width * 0.3, y: height * 0.5, w: width * 0.2, h: width * 0.2}
+                    ]
+                };
+            } else if (roomType === 'bedroom') {
+                return {
+                    walls: [...baseWalls,
+                        {x: width * 0.7, y: 0, w: wallThickness, h: height * 0.5}
+                    ],
+                    furniture: [
+                        {type: 'bed', x: width * 0.1, y: height * 0.1, w: width * 0.4, h: height * 0.3},
+                        {type: 'dresser', x: width * 0.75, y: height * 0.6, w: width * 0.15, h: height * 0.25},
+                        {type: 'nightstand', x: width * 0.55, y: height * 0.1, w: width * 0.1, h: width * 0.1}
+                    ]
+                };
+            } else if (roomType === 'bathroom') {
+                return {
+                    walls: [...baseWalls],
+                    furniture: [
+                        {type: 'bathtub', x: width * 0.1, y: height * 0.1, w: width * 0.35, h: height * 0.2},
+                        {type: 'sink', x: width * 0.6, y: height * 0.1, w: width * 0.15, h: height * 0.1},
+                        {type: 'toilet', x: width * 0.8, y: height * 0.3, w: width * 0.1, h: width * 0.1}
+                    ]
+                };
+            } else if (roomType === 'hallway') {
+                return {
+                    walls: [...baseWalls,
+                        {x: width * 0.3, y: height * 0.2, w: wallThickness, h: height * 0.3},
+                        {x: width * 0.7, y: height * 0.5, w: wallThickness, h: height * 0.3}
+                    ],
+                    furniture: [
+                        {type: 'table', x: width * 0.1, y: height * 0.4, w: width * 0.15, h: width * 0.08},
+                        {type: 'plant', x: width * 0.75, y: height * 0.2, w: width * 0.08, h: width * 0.08}
+                    ]
+                };
+            } else if (roomType === 'playroom') {
+                return {
+                    walls: [...baseWalls],
+                    furniture: [
+                        {type: 'toybox', x: width * 0.1, y: height * 0.7, w: width * 0.2, h: height * 0.15},
+                        {type: 'playmat', x: width * 0.4, y: height * 0.3, w: width * 0.3, h: height * 0.3},
+                        {type: 'bookshelf', x: width * 0.8, y: height * 0.1, w: width * 0.1, h: height * 0.4}
+                    ]
+                };
+            } else if (roomType === 'office') {
+                return {
+                    walls: [...baseWalls,
+                        {x: width * 0.5, y: 0, w: wallThickness, h: height * 0.4}
+                    ],
+                    furniture: [
+                        {type: 'desk', x: width * 0.1, y: height * 0.2, w: width * 0.3, h: height * 0.15},
+                        {type: 'chair', x: width * 0.2, y: height * 0.4, w: width * 0.1, h: width * 0.1},
+                        {type: 'bookshelf', x: width * 0.6, y: height * 0.1, w: width * 0.3, h: height * 0.1},
+                        {type: 'filing', x: width * 0.7, y: height * 0.6, w: width * 0.15, h: height * 0.25}
+                    ]
+                };
+            } else { // garage
+                return {
+                    walls: [...baseWalls],
+                    furniture: [
+                        {type: 'car', x: width * 0.3, y: height * 0.2, w: width * 0.4, h: height * 0.25},
+                        {type: 'toolbox', x: width * 0.1, y: height * 0.7, w: width * 0.15, h: height * 0.15},
+                        {type: 'shelf', x: width * 0.8, y: height * 0.1, w: width * 0.1, h: height * 0.6}
+                    ]
+                };
+            }
         }
 
         function updateUI() {
             document.getElementById('room-num').textContent = currentRoom;
+            document.getElementById('room-name').textContent = roomTheme.name;
             document.getElementById('dirt-count').textContent = messItems.length;
             document.getElementById('score').textContent = score;
         }
@@ -551,13 +716,25 @@
             const canvasWidth = canvas.width;
             const canvasHeight = canvas.height;
             
-            const roomLayouts = generateRoomLayout(canvasWidth, canvasHeight);
-            const layoutIndex = (currentRoom - 1) % roomLayouts.length;
-            currentWalls = [...roomLayouts[layoutIndex]];
+            // Select room theme
+            const themeKeys = Object.keys(roomThemes);
+            const themeIndex = (currentRoom - 1) % themeKeys.length;
+            const themeKey = themeKeys[themeIndex];
+            roomTheme = roomThemes[themeKey];
             
+            // Generate room layout
+            const roomLayout = generateRoomLayout(canvasWidth, canvasHeight, themeKey);
+            currentWalls = roomLayout.walls;
+            furniture = roomLayout.furniture;
+            
+            // Generate mess items
             messItems = [];
+            cleaningTrail = [];
+            particles = [];
+            
             const area = (canvasWidth * canvasHeight) / 10000;
-            const numMess = Math.floor(15 * area + Math.random() * 12 * area);
+            const baseMessCount = 15 + currentRoom * 2;
+            const numMess = Math.floor(baseMessCount * area + Math.random() * 10 * area);
             
             for (let i = 0; i < numMess; i++) {
                 let validPosition = false;
@@ -571,6 +748,7 @@
                     const messType = messTypes[Math.floor(Math.random() * messTypes.length)];
                     validPosition = true;
                     
+                    // Check walls
                     for (const wall of currentWalls) {
                         const wallMargin = Math.max(25, Math.min(canvasWidth, canvasHeight) * 0.04);
                         if (x > wall.x - wallMargin && x < wall.x + wall.w + wallMargin &&
@@ -580,12 +758,24 @@
                         }
                     }
                     
+                    // Check furniture
+                    for (const furn of furniture) {
+                        const furnMargin = Math.max(20, Math.min(canvasWidth, canvasHeight) * 0.03);
+                        if (x > furn.x - furnMargin && x < furn.x + furn.w + furnMargin &&
+                            y > furn.y - furnMargin && y < furn.y + furn.h + furnMargin) {
+                            validPosition = false;
+                            break;
+                        }
+                    }
+                    
+                    // Check robot start position
                     const robotStartMargin = Math.max(60, Math.min(canvasWidth, canvasHeight) * 0.1);
                     const dist = Math.sqrt((x - (robot.size + 20)) ** 2 + (y - (robot.size + 20)) ** 2);
                     if (dist < robotStartMargin) {
                         validPosition = false;
                     }
                     
+                    // Check other mess items
                     const messMargin = Math.max(35, Math.min(canvasWidth, canvasHeight) * 0.05);
                     for (const mess of messItems) {
                         const messDist = Math.sqrt((x - mess.x) ** 2 + (y - mess.y) ** 2);
@@ -600,7 +790,8 @@
                             x: x,
                             y: y,
                             type: messType,
-                            size: messType.size + Math.random() * 4 - 2
+                            size: messType.size + Math.random() * 4 - 2,
+                            rotation: Math.random() * Math.PI * 2
                         });
                     }
                     
@@ -608,20 +799,31 @@
                 }
             }
             
+            // Reset robot position
             const startMargin = Math.max(50, Math.min(canvas.width, canvas.height) * 0.06);
             robot.x = startMargin;
             robot.y = startMargin;
             robot.targetX = startMargin + robot.size/2;
             robot.targetY = startMargin + robot.size/2;
             robot.isMoving = false;
+            robot.rotation = 0;
+            robot.targetRotation = 0;
             
             updateUI();
         }
 
         function checkCollision(x, y, size) {
+            // Check walls
             for (const wall of currentWalls) {
                 if (x < wall.x + wall.w && x + size > wall.x &&
                     y < wall.y + wall.h && y + size > wall.y) {
+                    return true;
+                }
+            }
+            // Check furniture
+            for (const furn of furniture) {
+                if (x < furn.x + furn.w && x + size > furn.x &&
+                    y < furn.y + furn.h && y + size > furn.y) {
                     return true;
                 }
             }
@@ -636,6 +838,20 @@
                 
                 if (dist < robot.size/2 + mess.size + 5) {
                     score += mess.type.points;
+                    
+                    // Create particles
+                    for (let j = 0; j < 8; j++) {
+                        particles.push({
+                            x: mess.x,
+                            y: mess.y,
+                            vx: (Math.random() - 0.5) * 4,
+                            vy: (Math.random() - 0.5) * 4,
+                            color: mess.type.color,
+                            life: 1,
+                            size: Math.random() * 4 + 2
+                        });
+                    }
+                    
                     messItems.splice(i, 1);
                     updateUI();
                 }
@@ -708,6 +924,11 @@
             robot.targetY = y;
             robot.isMoving = true;
             
+            // Calculate target rotation
+            const dx = x - (robot.x + robot.size/2);
+            const dy = y - (robot.y + robot.size/2);
+            robot.targetRotation = Math.atan2(dy, dx);
+            
             const rect = canvas.getBoundingClientRect();
             const scaleX = rect.width / canvas.width;
             const scaleY = rect.height / canvas.height;
@@ -728,12 +949,27 @@
             if (controlMode === 'tap') {
                 setTarget(coords.x, coords.y);
             } else if (controlMode === 'drag') {
-                if (isPointInRobot(coords.x, coords.y)) {
-                    isDragging = true;
+                // Always start dragging, snap vacuum to finger/mouse
+                isDragging = true;
+                
+                // Smoothly animate the vacuum to the touch point
+                const targetX = coords.x - robot.size/2;
+                const targetY = coords.y - robot.size/2;
+                
+                // Check if the target position is valid (not colliding)
+                if (!checkCollision(targetX, targetY, robot.size)) {
+                    robot.x = targetX;
+                    robot.y = targetY;
+                } else {
+                    // If direct snap would cause collision, just start dragging from current position
                     dragOffset.x = coords.x - (robot.x + robot.size/2);
                     dragOffset.y = coords.y - (robot.y + robot.size/2);
-                    robot.isMoving = false;
                 }
+                
+                // Set offset to 0 for direct control after snap
+                dragOffset.x = 0;
+                dragOffset.y = 0;
+                robot.isMoving = false;
             } else if (controlMode === 'joystick') {
                 joystickActive = true;
                 joystickCenter.x = coords.x;
@@ -758,6 +994,13 @@
                 let finalY = Math.max(margin, Math.min(canvas.height - robot.size - margin, newY));
                 
                 if (!checkCollision(finalX, finalY, robot.size)) {
+                    // Update rotation based on movement
+                    const dx = finalX - robot.x;
+                    const dy = finalY - robot.y;
+                    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+                        robot.targetRotation = Math.atan2(dy, dx);
+                    }
+                    
                     robot.x = finalX;
                     robot.y = finalY;
                     checkMessCollection();
@@ -848,23 +1091,29 @@
             let newX = robot.x;
             let newY = robot.y;
             
+            // Keyboard controls
             if (keys['w'] || keys['arrowup']) {
                 newY -= robot.speed;
                 robot.isMoving = false;
+                robot.targetRotation = -Math.PI/2;
             }
             if (keys['s'] || keys['arrowdown']) {
                 newY += robot.speed;
                 robot.isMoving = false;
+                robot.targetRotation = Math.PI/2;
             }
             if (keys['a'] || keys['arrowleft']) {
                 newX -= robot.speed;
                 robot.isMoving = false;
+                robot.targetRotation = Math.PI;
             }
             if (keys['d'] || keys['arrowright']) {
                 newX += robot.speed;
                 robot.isMoving = false;
+                robot.targetRotation = 0;
             }
             
+            // Joystick controls
             if (controlMode === 'joystick' && joystickActive) {
                 const dx = joystickPos.x - joystickCenter.x;
                 const dy = joystickPos.y - joystickCenter.y;
@@ -876,9 +1125,11 @@
                     
                     newX = robot.x + moveX;
                     newY = robot.y + moveY;
+                    robot.targetRotation = Math.atan2(dy, dx);
                 }
             }
             
+            // Tap to move controls
             if (robot.isMoving && controlMode === 'tap') {
                 const dx = robot.targetX - (robot.x + robot.size/2);
                 const dy = robot.targetY - (robot.y + robot.size/2);
@@ -897,15 +1148,28 @@
             
             if (controlMode === 'drag' && isDragging) {
                 checkMessCollection();
+                
+                // Add to cleaning trail
+                cleaningTrail.push({
+                    x: robot.x + robot.size/2,
+                    y: robot.y + robot.size/2,
+                    life: 1
+                });
+                if (cleaningTrail.length > 30) {
+                    cleaningTrail.shift();
+                }
+                
                 return;
             }
             
+            // Boundary checks
             const margin = Math.max(25, Math.min(canvas.width, canvas.height) * 0.03);
             if (newX < margin) newX = margin;
             if (newX > canvas.width - robot.size - margin) newX = canvas.width - robot.size - margin;
             if (newY < margin) newY = margin;
             if (newY > canvas.height - robot.size - margin) newY = canvas.height - robot.size - margin;
             
+            // Collision checks
             if (!checkCollision(newX, robot.y, robot.size)) {
                 robot.x = newX;
             } else if (robot.isMoving) {
@@ -917,44 +1181,222 @@
                 robot.isMoving = false;
             }
             
+            // Update rotation smoothly
+            let rotDiff = robot.targetRotation - robot.rotation;
+            while (rotDiff > Math.PI) rotDiff -= Math.PI * 2;
+            while (rotDiff < -Math.PI) rotDiff += Math.PI * 2;
+            robot.rotation += rotDiff * 0.2;
+            
+            // Update brush rotation
+            robot.brushRotation += 0.15;
+            
+            // Add to cleaning trail when moving
+            if (Math.abs(newX - robot.x) > 0.1 || Math.abs(newY - robot.y) > 0.1) {
+                cleaningTrail.push({
+                    x: robot.x + robot.size/2,
+                    y: robot.y + robot.size/2,
+                    life: 1
+                });
+                if (cleaningTrail.length > 30) {
+                    cleaningTrail.shift();
+                }
+            }
+            
             checkMessCollection();
             
+            // Check level completion
             if (messItems.length === 0) {
                 gameRunning = false;
                 robot.isMoving = false;
                 isDragging = false;
                 joystickActive = false;
+                
+                // Calculate bonus
+                const timeBonus = Math.max(50, 200 - animationTime / 100);
+                const cleanBonus = 100;
+                const totalBonus = Math.floor(timeBonus + cleanBonus);
+                score += totalBonus;
+                
+                document.getElementById('bonusPoints').textContent = totalBonus;
                 document.getElementById('levelComplete').style.display = 'block';
                 
                 setTimeout(() => {
                     currentRoom++;
                     gameRunning = true;
+                    animationTime = 0;
                     document.getElementById('levelComplete').style.display = 'none';
                     generateRoom();
-                }, 2000);
+                }, 2500);
+            }
+        }
+        
+        // Enhanced drawing functions
+        function drawFloor() {
+            const pattern = roomTheme.floorPattern;
+            
+            if (pattern === 'wood') {
+                ctx.fillStyle = roomTheme.floorColor;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Wood grain
+                ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+                ctx.lineWidth = 1;
+                for (let y = 0; y < canvas.height; y += 30) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(canvas.width, y);
+                    ctx.stroke();
+                }
+            } else if (pattern === 'tiles') {
+                const tileSize = 40;
+                for (let x = 0; x < canvas.width; x += tileSize) {
+                    for (let y = 0; y < canvas.height; y += tileSize) {
+                        ctx.fillStyle = ((x/tileSize + y/tileSize) % 2 === 0) ? 
+                            roomTheme.floorColor : 'rgba(0,0,0,0.05)';
+                        ctx.fillRect(x, y, tileSize, tileSize);
+                    }
+                }
+            } else if (pattern === 'carpet') {
+                ctx.fillStyle = roomTheme.floorColor;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Carpet texture
+                for (let i = 0; i < 500; i++) {
+                    ctx.fillStyle = `rgba(0,0,0,${Math.random() * 0.03})`;
+                    ctx.fillRect(
+                        Math.random() * canvas.width,
+                        Math.random() * canvas.height,
+                        2, 2
+                    );
+                }
+            } else { // concrete
+                ctx.fillStyle = roomTheme.floorColor;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Concrete texture
+                ctx.fillStyle = 'rgba(0,0,0,0.05)';
+                for (let i = 0; i < 20; i++) {
+                    ctx.beginPath();
+                    ctx.arc(
+                        Math.random() * canvas.width,
+                        Math.random() * canvas.height,
+                        Math.random() * 50 + 20,
+                        0, Math.PI * 2
+                    );
+                    ctx.fill();
+                }
+            }
+        }
+        
+        function drawWalls() {
+            // Draw shadows first
+            ctx.fillStyle = 'rgba(0,0,0,0.2)';
+            for (const wall of currentWalls) {
+                ctx.fillRect(wall.x + 5, wall.y + 5, wall.w, wall.h);
+            }
+            
+            // Draw walls
+            ctx.fillStyle = roomTheme.wallColor;
+            for (const wall of currentWalls) {
+                ctx.fillRect(wall.x, wall.y, wall.w, wall.h);
+                
+                // Wall texture
+                ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                ctx.fillRect(wall.x, wall.y, wall.w, 2);
+                ctx.fillStyle = 'rgba(0,0,0,0.1)';
+                ctx.fillRect(wall.x, wall.y + wall.h - 2, wall.w, 2);
+            }
+        }
+        
+        function drawFurniture() {
+            for (const furn of furniture) {
+                // Shadow
+                ctx.fillStyle = 'rgba(0,0,0,0.15)';
+                ctx.fillRect(furn.x + 3, furn.y + 3, furn.w, furn.h);
+                
+                // Main furniture body
+                if (furn.type === 'couch') {
+                    ctx.fillStyle = '#8B4513';
+                    ctx.fillRect(furn.x, furn.y, furn.w, furn.h);
+                    ctx.fillStyle = '#A0522D';
+                    ctx.fillRect(furn.x + 5, furn.y + 5, furn.w - 10, furn.h - 10);
+                } else if (furn.type === 'tv') {
+                    ctx.fillStyle = '#2C2C2C';
+                    ctx.fillRect(furn.x, furn.y, furn.w, furn.h);
+                    ctx.fillStyle = '#1A1A1A';
+                    ctx.fillRect(furn.x + 2, furn.y + 2, furn.w - 4, furn.h - 4);
+                } else if (furn.type === 'table') {
+                    ctx.fillStyle = '#654321';
+                    ctx.fillRect(furn.x, furn.y, furn.w, furn.h);
+                    ctx.strokeStyle = '#4A3018';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(furn.x, furn.y, furn.w, furn.h);
+                } else if (furn.type === 'bed') {
+                    ctx.fillStyle = '#4B0082';
+                    ctx.fillRect(furn.x, furn.y, furn.w, furn.h);
+                    ctx.fillStyle = '#6A0DAD';
+                    ctx.fillRect(furn.x + furn.w * 0.1, furn.y + furn.h * 0.1, 
+                               furn.w * 0.8, furn.h * 0.8);
+                } else if (furn.type === 'counter') {
+                    ctx.fillStyle = '#D2691E';
+                    ctx.fillRect(furn.x, furn.y, furn.w, furn.h);
+                    ctx.fillStyle = '#8B4513';
+                    ctx.fillRect(furn.x, furn.y, furn.w, 3);
+                } else {
+                    // Generic furniture
+                    ctx.fillStyle = '#5D4037';
+                    ctx.fillRect(furn.x, furn.y, furn.w, furn.h);
+                }
             }
         }
         
         function drawRobot() {
             ctx.save();
             ctx.translate(robot.x + robot.size/2, robot.y + robot.size/2);
+            ctx.rotate(robot.rotation);
             
-            ctx.fillStyle = robot.color;
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.2)';
+            ctx.beginPath();
+            ctx.ellipse(2, 2, robot.size/2, robot.size/2.5, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Main body
+            const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, robot.size/2);
+            gradient.addColorStop(0, '#66BB6A');
+            gradient.addColorStop(0.7, robot.color);
+            gradient.addColorStop(1, '#2E7D32');
+            
+            ctx.fillStyle = gradient;
             ctx.beginPath();
             ctx.arc(0, 0, robot.size/2, 0, Math.PI * 2);
             ctx.fill();
             
-            ctx.fillStyle = '#2E7D32';
+            // Rotating brushes
+            ctx.save();
+            ctx.rotate(robot.brushRotation);
+            ctx.strokeStyle = '#1B5E20';
+            ctx.lineWidth = 3;
+            for (let i = 0; i < 4; i++) {
+                ctx.rotate(Math.PI / 2);
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(robot.size/2.5, 0);
+                ctx.stroke();
+            }
+            ctx.restore();
+            
+            // Center light
+            ctx.fillStyle = '#81C784';
             ctx.beginPath();
             ctx.arc(0, 0, robot.size/4, 0, Math.PI * 2);
             ctx.fill();
             
-            ctx.strokeStyle = '#1B5E20';
-            ctx.lineWidth = 2;
+            // Direction indicator
+            ctx.fillStyle = '#FFEB3B';
             ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(robot.size/3, 0);
-            ctx.stroke();
+            ctx.arc(robot.size/3, 0, 3, 0, Math.PI * 2);
+            ctx.fill();
             
             ctx.restore();
         }
@@ -962,86 +1404,195 @@
         function drawMess(mess) {
             const type = mess.type;
             
+            ctx.save();
+            ctx.translate(mess.x, mess.y);
+            ctx.rotate(mess.rotation);
+            
             if (type.shape === 'splatter') {
+                // Main splatter
                 ctx.fillStyle = type.color;
                 ctx.beginPath();
-                ctx.arc(mess.x, mess.y, mess.size, 0, Math.PI * 2);
+                ctx.arc(0, 0, mess.size, 0, Math.PI * 2);
                 ctx.fill();
                 
+                // Details
                 ctx.fillStyle = type.darkColor;
                 for (let i = 0; i < 3; i++) {
                     const angle = (i * Math.PI * 2) / 3;
                     const offsetX = Math.cos(angle) * mess.size * 0.3;
                     const offsetY = Math.sin(angle) * mess.size * 0.3;
                     ctx.beginPath();
-                    ctx.arc(mess.x + offsetX, mess.y + offsetY, mess.size * 0.2, 0, Math.PI * 2);
+                    ctx.arc(offsetX, offsetY, mess.size * 0.2, 0, Math.PI * 2);
                     ctx.fill();
                 }
             } else if (type.shape === 'crumpled') {
-                ctx.save();
-                ctx.translate(mess.x, mess.y);
-                ctx.rotate(Math.random() * Math.PI);
-                
                 ctx.fillStyle = type.color;
                 ctx.fillRect(-mess.size, -mess.size/2, mess.size * 2, mess.size);
                 
                 ctx.fillStyle = type.darkColor;
                 ctx.fillRect(-mess.size * 0.7, -mess.size/3, mess.size * 1.4, mess.size/3);
                 
-                ctx.restore();
+                // Crumple lines
+                ctx.strokeStyle = type.darkColor;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(-mess.size * 0.8, -mess.size * 0.3);
+                ctx.lineTo(-mess.size * 0.6, mess.size * 0.3);
+                ctx.moveTo(mess.size * 0.6, -mess.size * 0.3);
+                ctx.lineTo(mess.size * 0.8, mess.size * 0.3);
+                ctx.stroke();
             } else if (type.shape === 'round') {
+                // Fruit with shine
                 ctx.fillStyle = type.color;
                 ctx.beginPath();
-                ctx.arc(mess.x, mess.y, mess.size, 0, Math.PI * 2);
+                ctx.arc(0, 0, mess.size, 0, Math.PI * 2);
                 ctx.fill();
                 
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
                 ctx.beginPath();
-                ctx.arc(mess.x - mess.size * 0.3, mess.y - mess.size * 0.3, mess.size * 0.4, 0, Math.PI * 2);
+                ctx.ellipse(-mess.size * 0.3, -mess.size * 0.3, 
+                           mess.size * 0.4, mess.size * 0.3, -Math.PI/4, 0, Math.PI * 2);
                 ctx.fill();
                 
+                // Shadow on fruit
                 ctx.fillStyle = type.darkColor;
                 ctx.beginPath();
-                ctx.arc(mess.x + mess.size * 0.2, mess.y + mess.size * 0.2, mess.size * 0.3, 0, Math.PI * 2);
+                ctx.arc(mess.size * 0.2, mess.size * 0.2, mess.size * 0.3, 0, Math.PI * 2);
                 ctx.fill();
             } else if (type.shape === 'scattered') {
                 ctx.fillStyle = type.color;
-                for (let i = 0; i < 4; i++) {
-                    const angle = (i * Math.PI * 2) / 4 + Math.random() * 0.5;
+                for (let i = 0; i < 5; i++) {
+                    const angle = (i * Math.PI * 2) / 5 + Math.random() * 0.5;
                     const radius = mess.size * (0.5 + Math.random() * 0.5);
-                    const x = mess.x + Math.cos(angle) * radius;
-                    const y = mess.y + Math.sin(angle) * radius;
+                    const x = Math.cos(angle) * radius;
+                    const y = Math.sin(angle) * radius;
                     ctx.beginPath();
                     ctx.arc(x, y, mess.size * 0.3, 0, Math.PI * 2);
                     ctx.fill();
+                }
+            } else if (type.shape === 'paper') {
+                // Crumpled paper
+                ctx.fillStyle = type.color;
+                ctx.beginPath();
+                ctx.moveTo(-mess.size, -mess.size/2);
+                ctx.lineTo(mess.size * 0.8, -mess.size * 0.7);
+                ctx.lineTo(mess.size, mess.size * 0.6);
+                ctx.lineTo(-mess.size * 0.7, mess.size * 0.8);
+                ctx.closePath();
+                ctx.fill();
+                
+                // Paper lines
+                ctx.strokeStyle = type.darkColor;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(-mess.size * 0.5, -mess.size * 0.3);
+                ctx.lineTo(mess.size * 0.3, mess.size * 0.2);
+                ctx.moveTo(mess.size * 0.2, -mess.size * 0.4);
+                ctx.lineTo(-mess.size * 0.4, mess.size * 0.4);
+                ctx.stroke();
+            } else if (type.shape === 'toy') {
+                // Toy block
+                ctx.fillStyle = type.color;
+                ctx.fillRect(-mess.size/2, -mess.size/2, mess.size, mess.size);
+                
+                // Toy details
+                ctx.fillStyle = type.darkColor;
+                ctx.beginPath();
+                ctx.arc(0, 0, mess.size * 0.3, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(-mess.size/2 + 2, -mess.size/2 + 2, mess.size - 4, mess.size - 4);
+            }
+            
+            ctx.restore();
+        }
+        
+        function drawCleaningTrail() {
+            for (let i = 0; i < cleaningTrail.length; i++) {
+                const trail = cleaningTrail[i];
+                trail.life -= 0.03;
+                
+                if (trail.life > 0) {
+                    ctx.fillStyle = `rgba(76, 175, 80, ${trail.life * 0.2})`;
+                    ctx.beginPath();
+                    ctx.arc(trail.x, trail.y, robot.size/3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            
+            // Remove dead trails
+            cleaningTrail = cleaningTrail.filter(t => t.life > 0);
+        }
+        
+        function drawParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.2; // gravity
+                p.life -= 0.05;
+                
+                if (p.life > 0) {
+                    ctx.fillStyle = p.color;
+                    ctx.globalAlpha = p.life;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                } else {
+                    particles.splice(i, 1);
                 }
             }
         }
         
         function drawRoom() {
+            // Clear canvas
             ctx.fillStyle = '#E8F5E8';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            ctx.fillStyle = '#333';
-            for (const wall of currentWalls) {
-                ctx.fillRect(wall.x, wall.y, wall.w, wall.h);
-            }
+            // Draw floor pattern
+            drawFloor();
             
+            // Draw cleaning trail
+            drawCleaningTrail();
+            
+            // Draw walls
+            drawWalls();
+            
+            // Draw furniture
+            drawFurniture();
+            
+            // Draw mess items
             for (const mess of messItems) {
                 drawMess(mess);
             }
             
+            // Draw particles
+            drawParticles();
+            
+            // Draw joystick if active
             if (controlMode === 'joystick' && joystickActive) {
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                // Outer circle
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
                 ctx.beginPath();
                 ctx.arc(joystickCenter.x, joystickCenter.y, 50, 0, Math.PI * 2);
                 ctx.fill();
                 
-                ctx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
                 ctx.lineWidth = 2;
                 ctx.stroke();
                 
-                ctx.fillStyle = 'rgba(76, 175, 80, 0.8)';
+                // Inner control
+                const gradient = ctx.createRadialGradient(
+                    joystickPos.x, joystickPos.y, 0,
+                    joystickPos.x, joystickPos.y, 15
+                );
+                gradient.addColorStop(0, 'rgba(76, 175, 80, 0.9)');
+                gradient.addColorStop(1, 'rgba(46, 125, 50, 0.7)');
+                
+                ctx.fillStyle = gradient;
                 ctx.beginPath();
                 ctx.arc(joystickPos.x, joystickPos.y, 15, 0, Math.PI * 2);
                 ctx.fill();
@@ -1054,6 +1605,7 @@
         
         function gameLoop() {
             if (gameStarted) {
+                animationTime++;
                 updateRobot();
                 drawRoom();
                 drawRobot();
