@@ -608,101 +608,227 @@
         }
 
         // Enhanced room layouts with furniture
-        function generateRoomLayout(width, height, roomType) {
+        function generateRoomLayout(width, height) {
             const wallThickness = Math.max(20, Math.min(width, height) * 0.03);
-            const layouts = [];
+            const roomLayouts = [];
             
-            // Generate base walls
-            const baseWalls = [
+            // Select random room theme
+            const themeKeys = Object.keys(roomThemes);
+            const randomThemeKey = themeKeys[Math.floor(Math.random() * themeKeys.length)];
+            roomTheme = roomThemes[randomThemeKey];
+            
+            // Generate base walls (always present)
+            const walls = [
                 {x: 0, y: 0, w: width, h: wallThickness},
                 {x: 0, y: 0, w: wallThickness, h: height},
                 {x: width - wallThickness, y: 0, w: wallThickness, h: height},
                 {x: 0, y: height - wallThickness, w: width, h: wallThickness}
             ];
             
-            // Different room configurations
-            if (roomType === 'livingRoom') {
-                return {
-                    walls: [...baseWalls,
-                        {x: width * 0.6, y: height * 0.3, w: wallThickness, h: height * 0.4}
-                    ],
-                    furniture: [
-                        {type: 'couch', x: width * 0.1, y: height * 0.2, w: width * 0.35, h: height * 0.15},
-                        {type: 'tv', x: width * 0.7, y: height * 0.1, w: width * 0.2, h: wallThickness},
-                        {type: 'table', x: width * 0.25, y: height * 0.5, w: width * 0.15, h: width * 0.15}
-                    ]
-                };
-            } else if (roomType === 'kitchen') {
-                return {
-                    walls: [...baseWalls],
-                    furniture: [
-                        {type: 'counter', x: width * 0.1, y: height * 0.1, w: width * 0.6, h: height * 0.1},
-                        {type: 'fridge', x: width * 0.75, y: height * 0.1, w: width * 0.15, h: height * 0.2},
-                        {type: 'table', x: width * 0.3, y: height * 0.5, w: width * 0.2, h: width * 0.2}
-                    ]
-                };
-            } else if (roomType === 'bedroom') {
-                return {
-                    walls: [...baseWalls,
-                        {x: width * 0.7, y: 0, w: wallThickness, h: height * 0.5}
-                    ],
-                    furniture: [
-                        {type: 'bed', x: width * 0.1, y: height * 0.1, w: width * 0.4, h: height * 0.3},
-                        {type: 'dresser', x: width * 0.75, y: height * 0.6, w: width * 0.15, h: height * 0.25},
-                        {type: 'nightstand', x: width * 0.55, y: height * 0.1, w: width * 0.1, h: width * 0.1}
-                    ]
-                };
-            } else if (roomType === 'bathroom') {
-                return {
-                    walls: [...baseWalls],
-                    furniture: [
-                        {type: 'bathtub', x: width * 0.1, y: height * 0.1, w: width * 0.35, h: height * 0.2},
-                        {type: 'sink', x: width * 0.6, y: height * 0.1, w: width * 0.15, h: height * 0.1},
-                        {type: 'toilet', x: width * 0.8, y: height * 0.3, w: width * 0.1, h: width * 0.1}
-                    ]
-                };
-            } else if (roomType === 'hallway') {
-                return {
-                    walls: [...baseWalls,
-                        {x: width * 0.3, y: height * 0.2, w: wallThickness, h: height * 0.3},
-                        {x: width * 0.7, y: height * 0.5, w: wallThickness, h: height * 0.3}
-                    ],
-                    furniture: [
-                        {type: 'table', x: width * 0.1, y: height * 0.4, w: width * 0.15, h: width * 0.08},
-                        {type: 'plant', x: width * 0.75, y: height * 0.2, w: width * 0.08, h: width * 0.08}
-                    ]
-                };
-            } else if (roomType === 'playroom') {
-                return {
-                    walls: [...baseWalls],
-                    furniture: [
-                        {type: 'toybox', x: width * 0.1, y: height * 0.7, w: width * 0.2, h: height * 0.15},
-                        {type: 'playmat', x: width * 0.4, y: height * 0.3, w: width * 0.3, h: height * 0.3},
-                        {type: 'bookshelf', x: width * 0.8, y: height * 0.1, w: width * 0.1, h: height * 0.4}
-                    ]
-                };
-            } else if (roomType === 'office') {
-                return {
-                    walls: [...baseWalls,
-                        {x: width * 0.5, y: 0, w: wallThickness, h: height * 0.4}
-                    ],
-                    furniture: [
-                        {type: 'desk', x: width * 0.1, y: height * 0.2, w: width * 0.3, h: height * 0.15},
-                        {type: 'chair', x: width * 0.2, y: height * 0.4, w: width * 0.1, h: width * 0.1},
-                        {type: 'bookshelf', x: width * 0.6, y: height * 0.1, w: width * 0.3, h: height * 0.1},
-                        {type: 'filing', x: width * 0.7, y: height * 0.6, w: width * 0.15, h: height * 0.25}
-                    ]
-                };
-            } else { // garage
-                return {
-                    walls: [...baseWalls],
-                    furniture: [
-                        {type: 'car', x: width * 0.3, y: height * 0.2, w: width * 0.4, h: height * 0.25},
-                        {type: 'toolbox', x: width * 0.1, y: height * 0.7, w: width * 0.15, h: height * 0.15},
-                        {type: 'shelf', x: width * 0.8, y: height * 0.1, w: width * 0.1, h: height * 0.6}
-                    ]
-                };
+            // Add random interior walls (0-3 walls)
+            const numInteriorWalls = Math.floor(Math.random() * 4);
+            const minWallLength = Math.min(width, height) * 0.2;
+            const maxWallLength = Math.min(width, height) * 0.6;
+            
+            for (let i = 0; i < numInteriorWalls; i++) {
+                const isVertical = Math.random() > 0.5;
+                let wall;
+                let attempts = 0;
+                let validWall = false;
+                
+                while (!validWall && attempts < 20) {
+                    if (isVertical) {
+                        const length = minWallLength + Math.random() * (maxWallLength - minWallLength);
+                        wall = {
+                            x: wallThickness + Math.random() * (width - wallThickness * 2),
+                            y: wallThickness + Math.random() * (height - length - wallThickness),
+                            w: wallThickness,
+                            h: length
+                        };
+                    } else {
+                        const length = minWallLength + Math.random() * (maxWallLength - minWallLength);
+                        wall = {
+                            x: wallThickness + Math.random() * (width - length - wallThickness),
+                            y: wallThickness + Math.random() * (height - wallThickness * 2),
+                            w: length,
+                            h: wallThickness
+                        };
+                    }
+                    
+                    // Check if wall doesn't block the starting area
+                    const startArea = {
+                        x: wallThickness,
+                        y: wallThickness,
+                        w: width * 0.3,
+                        h: height * 0.3
+                    };
+                    
+                    if (!(wall.x < startArea.x + startArea.w && wall.x + wall.w > startArea.x &&
+                          wall.y < startArea.y + startArea.h && wall.y + wall.h > startArea.y)) {
+                        validWall = true;
+                    }
+                    attempts++;
+                }
+                
+                if (validWall) {
+                    walls.push(wall);
+                }
             }
+            
+            // Generate random furniture
+            const furnitureTypes = roomTheme.furnitureTypes;
+            const numFurniture = Math.min(furnitureTypes.length, 2 + Math.floor(Math.random() * 3));
+            const furniture = [];
+            
+            for (let i = 0; i < numFurniture; i++) {
+                const type = furnitureTypes[i % furnitureTypes.length];
+                let furn;
+                let attempts = 0;
+                let validPlacement = false;
+                
+                while (!validPlacement && attempts < 30) {
+                    // Random size based on furniture type
+                    let fw, fh;
+                    switch(type) {
+                        case 'couch':
+                        case 'bed':
+                            fw = width * (0.2 + Math.random() * 0.15);
+                            fh = height * (0.1 + Math.random() * 0.1);
+                            break;
+                        case 'table':
+                        case 'nightstand':
+                            fw = width * (0.08 + Math.random() * 0.08);
+                            fh = fw; // Square tables
+                            break;
+                        case 'tv':
+                        case 'dresser':
+                            fw = width * (0.15 + Math.random() * 0.1);
+                            fh = height * 0.05;
+                            break;
+                        default:
+                            fw = width * (0.1 + Math.random() * 0.1);
+                            fh = height * (0.1 + Math.random() * 0.1);
+                    }
+                    
+                    furn = {
+                        type: type,
+                        x: wallThickness * 2 + Math.random() * (width - fw - wallThickness * 4),
+                        y: wallThickness * 2 + Math.random() * (height - fh - wallThickness * 4),
+                        w: fw,
+                        h: fh
+                    };
+                    
+                    validPlacement = true;
+                    
+                    // Check collision with walls
+                    for (const wall of walls) {
+                        const margin = wallThickness * 1.5;
+                        if (furn.x < wall.x + wall.w + margin && furn.x + furn.w > wall.x - margin &&
+                            furn.y < wall.y + wall.h + margin && furn.y + furn.h > wall.y - margin) {
+                            validPlacement = false;
+                            break;
+                        }
+                    }
+                    
+                    // Check collision with other furniture
+                    for (const otherFurn of furniture) {
+                        const margin = Math.min(width, height) * 0.05;
+                        if (furn.x < otherFurn.x + otherFurn.w + margin && 
+                            furn.x + furn.w > otherFurn.x - margin &&
+                            furn.y < otherFurn.y + otherFurn.h + margin && 
+                            furn.y + furn.h > otherFurn.y - margin) {
+                            validPlacement = false;
+                            break;
+                        }
+                    }
+                    
+                    // Check starting area is clear
+                    const startArea = {
+                        x: wallThickness,
+                        y: wallThickness,
+                        w: width * 0.25,
+                        h: height * 0.25
+                    };
+                    
+                    if (furn.x < startArea.x + startArea.w && furn.x + furn.w > startArea.x &&
+                        furn.y < startArea.y + startArea.h && furn.y + furn.h > startArea.y) {
+                        validPlacement = false;
+                    }
+                    
+                    attempts++;
+                }
+                
+                if (validPlacement) {
+                    furniture.push(furn);
+                }
+            }
+            
+            // Verify room is navigable using flood fill
+            const gridSize = 20;
+            const gridWidth = Math.ceil(width / gridSize);
+            const gridHeight = Math.ceil(height / gridSize);
+            const grid = Array(gridHeight).fill(null).map(() => Array(gridWidth).fill(0));
+            
+            // Mark obstacles in grid
+            for (let y = 0; y < gridHeight; y++) {
+                for (let x = 0; x < gridWidth; x++) {
+                    const px = x * gridSize + gridSize/2;
+                    const py = y * gridSize + gridSize/2;
+                    
+                    // Check walls
+                    for (const wall of walls) {
+                        if (px >= wall.x && px <= wall.x + wall.w &&
+                            py >= wall.y && py <= wall.y + wall.h) {
+                            grid[y][x] = 1;
+                            break;
+                        }
+                    }
+                    
+                    // Check furniture
+                    for (const furn of furniture) {
+                        if (px >= furn.x && px <= furn.x + furn.w &&
+                            py >= furn.y && py <= furn.y + furn.h) {
+                            grid[y][x] = 1;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            // Flood fill from start position
+            const startGridX = Math.floor((wallThickness * 2) / gridSize);
+            const startGridY = Math.floor((wallThickness * 2) / gridSize);
+            const visited = Array(gridHeight).fill(null).map(() => Array(gridWidth).fill(false));
+            const queue = [[startGridX, startGridY]];
+            let reachableCells = 0;
+            
+            while (queue.length > 0) {
+                const [x, y] = queue.shift();
+                if (x < 0 || x >= gridWidth || y < 0 || y >= gridHeight) continue;
+                if (visited[y][x] || grid[y][x] === 1) continue;
+                
+                visited[y][x] = true;
+                reachableCells++;
+                
+                queue.push([x+1, y], [x-1, y], [x, y+1], [x, y-1]);
+            }
+            
+            // Calculate total free cells
+            let totalFreeCells = 0;
+            for (let y = 0; y < gridHeight; y++) {
+                for (let x = 0; x < gridWidth; x++) {
+                    if (grid[y][x] === 0) totalFreeCells++;
+                }
+            }
+            
+            // If less than 70% of free space is reachable, regenerate with fewer obstacles
+            if (reachableCells < totalFreeCells * 0.7) {
+                // Remove some furniture and interior walls
+                furniture.splice(Math.floor(furniture.length / 2));
+                walls.splice(4 + Math.floor((walls.length - 4) / 2));
+            }
+            
+            return { walls, furniture };
         }
 
         function updateUI() {
@@ -716,14 +842,8 @@
             const canvasWidth = canvas.width;
             const canvasHeight = canvas.height;
             
-            // Select room theme
-            const themeKeys = Object.keys(roomThemes);
-            const themeIndex = (currentRoom - 1) % themeKeys.length;
-            const themeKey = themeKeys[themeIndex];
-            roomTheme = roomThemes[themeKey];
-            
-            // Generate room layout
-            const roomLayout = generateRoomLayout(canvasWidth, canvasHeight, themeKey);
+            // Generate random room layout with random theme
+            const roomLayout = generateRoomLayout(canvasWidth, canvasHeight);
             currentWalls = roomLayout.walls;
             furniture = roomLayout.furniture;
             
